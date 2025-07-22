@@ -230,19 +230,19 @@ app.get('/movie/:id', checkAuthenticated, (req, res) => {
       // Check if any product with the given ID was found
       if (results.length > 0) {
           // Render HTML page with the product data
-          res.render('product', { product: results[0], user: req.session.user  });
+          res.render('movie', { movie: results[0], user: req.session.user  });
       } else {
           // If no product with the given ID was found, render a 404 page or handle it accordingly
-          res.status(404).send('Product not found');
+          res.status(404).send('movie not found');
       }
   });
 });
 
-app.get('/addProduct', checkAuthenticated, checkAdmin, (req, res) => {
-    res.render('addProduct', {user: req.session.user } ); 
+app.get('/addMovie', checkAuthenticated, checkAdmin, (req, res) => {
+    res.render('addMovie', {user: req.session.user } ); 
 });
 
-app.post('/addProduct', upload.single('image'),  (req, res) => {
+app.post('/addMovie', upload.single('image'),  (req, res) => {
     // Extract product data from the request body
     const { name, quantity, price} = req.body;
     let image;
@@ -261,7 +261,7 @@ app.post('/addProduct', upload.single('image'),  (req, res) => {
             res.status(500).send('Error adding movie');
         } else {
             // Send a success response
-            res.redirect('/inventory');
+            res.redirect('/web');
         }
     });
 });
