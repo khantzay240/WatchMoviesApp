@@ -154,9 +154,9 @@ app.post('/login', (req, res) => {
             req.session.user = results[0]; 
             req.flash('success', 'Login successful!');
             if(req.session.user.role == 'user')
-                res.redirect('/shopping');
+                res.redirect('/movies');
             else
-                res.redirect('/inventory');
+                res.redirect('/web');
         } else {
             // Invalid credentials
             req.flash('error', 'Invalid email or password.');
@@ -165,15 +165,15 @@ app.post('/login', (req, res) => {
     });
 });
 
-app.get('/shopping', checkAuthenticated, (req, res) => {
+app.get('/movies', checkAuthenticated, (req, res) => {
     // Fetch data from MySQL
     connection.query('SELECT * FROM products', (error, results) => {
         if (error) throw error;
-        res.render('shopping', { user: req.session.user, products: results });
+        res.render('movies', { user: req.session.user, products: results });
       });
 });
 
-app.post('/add-to-cart/:id', checkAuthenticated, (req, res) => {
+app.post('/add-to-page/:id', checkAuthenticated, (req, res) => {
     const productId = parseInt(req.params.id);
     const quantity = parseInt(req.body.quantity) || 1;
 
