@@ -184,16 +184,16 @@ app.post('/add-to-page/:id', checkAuthenticated, (req, res) => {
             const product = results[0];
 
             // Initialize cart in session if not exists
-            if (!req.session.cart) {
-                req.session.cart = [];
+            if (!req.session.watchlist) {
+                req.session.watchlist = [];
             }
 
             // Check if product already in cart
-            const existingItem = req.session.cart.find(item => item.movieId === movieId);
+            const existingItem = req.session.watchlist.find(item => item.movieId === movieId);
             if (existingItem) {
                 existingItem.quantity += quantity;
             } else {
-                req.session.cart.push({
+                req.session.watchlist.push({
                     productId: product.productId,
                     productName: product.productName,
                     release_date: product.release_date,
@@ -202,16 +202,16 @@ app.post('/add-to-page/:id', checkAuthenticated, (req, res) => {
                 });
             }
 
-            res.redirect('/cart');
+            res.redirect('/watchlist');
         } else {
-            res.status(404).send("Product not found");
+            res.status(404).send("movie not found");
         }
     });
 });
 
-app.get('/cart', checkAuthenticated, (req, res) => {
-    const cart = req.session.cart || [];
-    res.render('cart', { cart, user: req.session.user });
+app.get('/watchlist', checkAuthenticated, (req, res) => {
+    const cart = req.session.watchlist || [];
+    res.render('watchlist', { watchlist, user: req.session.user });
 });
 
 app.get('/logout', (req, res) => {
@@ -219,7 +219,7 @@ app.get('/logout', (req, res) => {
     res.redirect('/');
 });
 
-app.get('/product/:id', checkAuthenticated, (req, res) => {
+app.get('/movie/:id', checkAuthenticated, (req, res) => {
   // Extract the product ID from the request parameters
   const productId = req.params.id;
 
