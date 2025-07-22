@@ -110,7 +110,7 @@ app.get('/inventory', checkAuthenticated, checkAdmin, (req, res) => {
       res.render('inventory', { products: results, user: req.session.user });
     });
 });
-// register/login- misha
+
 app.get('/register', (req, res) => {
     res.render('register', { messages: req.flash('error'), formData: req.flash('formData')[0] });
 });
@@ -189,7 +189,7 @@ app.post('/add-to-cart/:id', checkAuthenticated, (req, res) => {
             }
 
             // Check if product already in cart
-            const existingItem = req.session.cart.find(item => item.movieId === movieId);
+            const existingItem = req.session.cart.find(item => item.productId === productId);
             if (existingItem) {
                 existingItem.quantity += quantity;
             } else {
@@ -197,8 +197,8 @@ app.post('/add-to-cart/:id', checkAuthenticated, (req, res) => {
                     productId: product.productId,
                     productName: product.productName,
                     release_date: product.release_date,
-                    genre: genre,
-                    image: movie.image
+                    genre: genrey,
+                    image: product.image
                 });
             }
 
