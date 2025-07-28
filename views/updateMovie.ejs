@@ -5,13 +5,13 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
-  <title>Movie App</title>
+  <title>Watch Movies App</title>
 </head>
 <body>
   <!-- Navbar -->
   <nav class="navbar navbar-expand-sm bg-dark navbar-dark">
     <div class="container-fluid">
-      <a class="navbar-brand" href="/">Movie App</a>
+      <a class="navbar-brand" href="/">Watch Movies App</a>
       <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#collapsibleNavbar">
         <span class="navbar-toggler-icon"></span>
       </button>
@@ -21,7 +21,7 @@
             <a class="nav-link" href="/inventory">Inventory</a>
           </li>
           <li class="nav-item">
-            <a class="nav-link" href="/addProduct">Add New Movie</a>
+            <a class="nav-link" href="/addMovie">Add New Movie</a>
           </li>
           <li class="nav-item">
             <a class="nav-link" href="/logout">Logout</a>
@@ -35,12 +35,12 @@
   <div class="container mt-4">
     <h2 class="text-center mb-4">Update Movie</h2>
     
-    <% if (product) { %>
-      <form action="/updateProduct/<%= product.productId %>" method="POST" enctype="multipart/form-data" class="mx-auto" style="max-width: 500px;">
+    <% if (movie) { %>
+      <form action="/updateMovie/<%= movie.movieId %>" method="POST" enctype="multipart/form-data" class="mx-auto" style="max-width: 500px;">
         
         <div class="mb-3">
           <label for="name" class="form-label">Movie Name</label>
-          <input type="text" class="form-control" id="name" name="name" value="<%= product.productName %>" required>
+          <input type="text" class="form-control" id="name" name="name" value="<%= movie.movieName %>" required>
         </div>
 
         <div class="mb-3">
@@ -55,8 +55,8 @@
 
         <div class="mb-3">
           <label class="form-label">Current Image</label>
-          <input type="text" class="form-control" name="currentImage" value="<%= product.image %>" readonly>
-          <img src="/images/<%= product.image %>" class="img-thumbnail mt-2" style="width: 150px;">
+          <input type="text" class="form-control" name="currentImage" value="<%= movie.image %>" readonly>
+          <img src="/images/<%= movie.image %>" class="img-thumbnail mt-2" style="width: 150px;">
         </div>
 
         <div class="mb-4">

@@ -1,6 +1,6 @@
 The URL link for our app - https://movie-app-uk44.onrender.com/
 what's completed;
--Roughly the code is structured-misha
+-Roughly the code is structured
 -Have database but still has only data for one movie
 -Connected database with Vs and filess.io
 -Can comit and push from Vs to github.

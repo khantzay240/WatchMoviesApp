@@ -5,12 +5,12 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
-  <title>Movie App</title>
+  <title>Watch Movies App</title>
 </head>
 <body>
     <nav class="navbar navbar-expand-sm bg-dark navbar-dark">
       <div class="container-fluid">
-        <a class="navbar-brand" href="/">Movie App</a>
+        <a class="navbar-brand" href="/">Watch Movies App</a>
         <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#collapsibleNavbar">
           <span class="navbar-toggler-icon"></span>
         </button>
@@ -30,13 +30,13 @@
   <div class="container">
     <p>Welcome, <%= user.username %> (<%= user.role %>)</p>
     <br>
-    <div class="text-center"><h2>Movies from Movie App Database</h2></div>
+    <div class="text-center"><h2>Movies from Watch Movies App Database</h2></div>
     <br>
     <table class="table table-hover small text-center">
       <thead>
           <tr>
-            <th width="100">Product Name</th>
-            <th width="100">Product Image</th>
+            <th width="100">Movie Name</th>
+            <th width="100">Movie Image</th>
             <th width="50">Release Date</th>
             <th width="50">Genre</th>
             <th width="50">Edit</th>
@@ -44,17 +44,17 @@
           </tr>
       </thead>
       <tbody>
-        <% for(let i=0; i < products.length; i++) { %>
+        <% for(let i=0; i < movies.length; i++) { %>
           <tr>
-            <td><a href="/product/<%= products[i].productId %>" ><%= products[i].productName %></a></td>
-            <td><img src = "images/<%= products[i].image %>" width="20%"></td>
-            <td><%= products[i].release_date %></td>
-            <td>$<%= products[i].genre.toFixed(2) %></td>
+            <td><a href="/movie/<%= movies[i].movieId %>" ><%= movies[i].movieName %></a></td>
+            <td><img src = "images/<%= movies[i].image %>" width="20%"></td>
+            <td><%= new Date(movies[i].release_date).toDateString() %></td>
+            <td><%= movies[i].genre %></td>
             <!-- Edit Link -->
-            <td><a href="/updateProduct/<%= products[i].productId %>">Edit</a></td>
+            <td><a href="/updateMovie/<%= movies[i].movieId %>">Edit</a></td>
             <!-- Delete Link -->
             <td>
-                <form action="/deleteProduct/<%= products[i].productId %>" method="POST" onsubmit="return confirm('Are you sure you want to delete this product?');">
+                <form action="/deleteMovie/<%= movies[i].movieId %>" method="POST" onsubmit="return confirm('Are you sure you want to delete this product?');">
                     <button type="submit" class="btn btn-sm btn-danger">Delete</button>
                 </form>
             </td>

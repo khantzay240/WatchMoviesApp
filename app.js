@@ -17,18 +17,17 @@ const storage = multer.diskStorage({
 
 const upload = multer({ storage: storage });
 
-const connection = mysql.createConnection({
-    host: '4umfc5.h.filess.io',
+const db = mysql.createConnection({
+    host: 'y20w5f.h.filess.io',
     port: 3307,
-    user: 'CA2_legaswall',
-    password: '2839e927a8633979137ba61013421f1bfcab0a4e',
-    database: 'CA2_legaswall'
+    user: 'Ca2_cagesummer',
+    password: '6a2219a0553c16c6d1268ac34c04f60757a09fa0',
+    database: 'Ca2_cagesummer'
   });
 
-connection.connect((err) => {
+db.connect((err) => {
     if (err) {
-        console.error('Error connecting to MySQL:', err);
-        return;
+        throw err;
     }
     console.log('Connected to MySQL database');
 });
@@ -69,7 +68,7 @@ const checkAdmin = (req, res, next) => {
         return next();
     } else {
         req.flash('error', 'Access denied');
-        res.redirect('/shopping');
+        res.redirect('/view');
     }
 };
 
@@ -82,7 +81,7 @@ const validateRegistration = (req, res, next) => {
     }
     
     if (password.length < 6) {
-        req.flash('error', 'Password should be at least 6 or more characters long');
+        req.flash('error', 'Password should be at least 6 characters long');
         req.flash('formData', req.body);
         return res.redirect('/register');
     }
@@ -91,23 +90,21 @@ const validateRegistration = (req, res, next) => {
 
 // Define routes
 app.get('/',  (req, res) => {
-    res.render('index', {user: req.session.user} );
-});
-
-// View/list ALFONSO
-app.get('/', (req, res) => {
-    const sql = 'SELECT * FROM movies';
-    connection.query(sql, (err, results) => {
-        if (err) return res.status(500).send('Error fetching movies');
-        res.render('movies', { movies: results });
-    });
+    const moviePosters = [
+        "darkknight.jpg",
+        "dune.jpg",
+        "inception.jpg",
+        "lionking.jpg",
+        "hangover.jpg"
+    ];
+  res.render("index", { user: req.session.user, posters: moviePosters });
 });
 
 app.get('/inventory', checkAuthenticated, checkAdmin, (req, res) => {
     // Fetch data from MySQL
-    connection.query('SELECT * FROM products', (error, results) => {
+    db.query('SELECT * FROM movies', (error, results) => {
       if (error) throw error;
-      res.render('inventory', { products: results, user: req.session.user });
+      res.render('inventory', { movies: results, user: req.session.user });
     });
 });
 // register/login- misha
@@ -120,7 +117,7 @@ app.post('/register', validateRegistration, (req, res) => {
     const { username, email, password, address, contact, role } = req.body;
 
     const sql = 'INSERT INTO users (username, email, password, address, contact, role) VALUES (?, ?, SHA1(?), ?, ?, ?)';
-    connection.query(sql, [username, email, password, address, contact, role], (err, result) => {
+    db.query(sql, [username, email, password, address, contact, role], (err, result) => {
         if (err) {
             throw err;
         }
@@ -129,6 +126,7 @@ app.post('/register', validateRegistration, (req, res) => {
         res.redirect('/login');
     });
 });
+
 
 app.get('/login', (req, res) => {
     res.render('login', { messages: req.flash('success'), errors: req.flash('error') });
@@ -144,19 +142,20 @@ app.post('/login', (req, res) => {
     }
 
     const sql = 'SELECT * FROM users WHERE email = ? AND password = SHA1(?)';
-    connection.query(sql, [email, password], (err, results) => {
+    db.query(sql, [email, password], (err, results) => {
         if (err) {
-            throw err;
+            console.error('Database error:', err);
+            req.flash('error', 'Database error occurred. Please try again later.');
+            return res.redirect('/login');
         }
 
         if (results.length > 0) {
-            // Successful login
             req.session.user = results[0]; 
             req.flash('success', 'Login successful!');
             if(req.session.user.role == 'user')
-                res.redirect('/movies');
+                res.redirect('/list');
             else
-                res.redirect('/web');
+                res.redirect('/inventory');
         } else {
             // Invalid credentials
             req.flash('error', 'Invalid email or password.');
@@ -165,53 +164,56 @@ app.post('/login', (req, res) => {
     });
 });
 
-app.get('/movies', checkAuthenticated, (req, res) => {
-    // Fetch data from MySQL
-    connection.query('SELECT * FROM products', (error, results) => {
-        if (error) throw error;
-        res.render('movies', { user: req.session.user, products: results });
-      });
+app.get('/list', (req, res) => {
+    const sql = 'SELECT * FROM movies';
+    db.query(sql, (error, results) => {
+        if (error) {
+            console.error('Database query error:', error.message);
+            return res.status(500).send('Database query error');
+        }
+        res.render('list', { movies: results, user: req.session.user });
+    });
 });
 
-app.post('/add-to-page/:id', checkAuthenticated, (req, res) => {
-    const productId = parseInt(req.params.id);
-    const quantity = parseInt(req.body.quantity) || 1;
+app.post('/add-to-watched/:id', checkAuthenticated, (req, res) => {
+    const movieId = parseInt(req.params.id);
 
-    connection.query('SELECT * FROM products WHERE productId = ?', [productId], (error, results) => {
+    db.query('SELECT * FROM movies WHERE movieId = ?', [movieId], (error, results) => {
         if (error) throw error;
 
         if (results.length > 0) {
-            const product = results[0];
+            const movie = results[0];
 
             // Initialize cart in session if not exists
-            if (!req.session.watchlist) {
-                req.session.watchlist = [];
+            if (!req.session.watched) {
+                req.session.watched = [];
             }
 
-            // Check if product already in cart
-            const existingItem = req.session.watchlist.find(item => item.movieId === movieId);
+            // Check if movie already in cart
+            const existingItem = req.session.watched.find(item => item.movieId === movieId);
             if (existingItem) {
-                existingItem.quantity += quantity;
+                print('Movie is already in watched list')
+                res.redirect('/watched');
             } else {
-                req.session.watchlist.push({
-                    productId: product.productId,
-                    productName: product.productName,
-                    release_date: product.release_date,
-                    genre: genre,
+                req.session.watched.push({
+                    movieId: movie.movieId,
+                    movieName: movie.movieName,
+                    release_date: movie.release_date,
+                    genre: movie.genre,
                     image: movie.image
                 });
             }
 
-            res.redirect('/watchlist');
+            res.redirect('/watched');
         } else {
             res.status(404).send("movie not found");
         }
     });
 });
 
-app.get('/watchlist', checkAuthenticated, (req, res) => {
-    const cart = req.session.watchlist || [];
-    res.render('watchlist', { watchlist, user: req.session.user });
+app.get('/watched', checkAuthenticated, (req, res) => {
+    const watched = req.session.watched || [];
+    res.render('watched', { watched, user: req.session.user });
 });
 
 app.get('/logout', (req, res) => {
@@ -220,65 +222,72 @@ app.get('/logout', (req, res) => {
 });
 
 app.get('/movie/:id', checkAuthenticated, (req, res) => {
-  // Extract the product ID from the request parameters
-  const productId = req.params.id;
+  // Extract the movie ID from the request parameters
+  const movieId = req.params.id;
 
-  // Fetch data from MySQL based on the product ID
-  connection.query('SELECT * FROM products WHERE productId = ?', [productId], (error, results) => {
+  // Fetch data from MySQL based on the movie ID
+  db.query('SELECT * FROM movies WHERE movieId = ?', [movieId], (error, results) => {
       if (error) throw error;
 
-      // Check if any product with the given ID was found
+      // Check if any movie with the given ID was found
       if (results.length > 0) {
           // Render HTML page with the product data
           res.render('movie', { movie: results[0], user: req.session.user  });
       } else {
-          // If no product with the given ID was found, render a 404 page or handle it accordingly
+          // If no movie with the given ID was found, render a 404 page or handle it accordingly
           res.status(404).send('movie not found');
       }
   });
 });
 
 app.get('/addMovie', checkAuthenticated, checkAdmin, (req, res) => {
-    res.render('addMovie', {user: req.session.user } ); 
+    // Pass both user and messages to the template
+    res.render('addMovie', { 
+        user: req.session.user, 
+        messages: req.flash('errorMessages') // Retrieve any flash messages
+    });
 });
-
-app.post('/addMovie', upload.single('image'),  (req, res) => {
+ 
+app.post('/addMovie', upload.single('image'), (req, res) => {
     // Extract product data from the request body
-    const { name, quantity, price} = req.body;
+    const { name, release_date, genre } = req.body;
     let image;
+ 
     if (req.file) {
         image = req.file.filename; // Save only the filename
     } else {
         image = null;
     }
-
+ 
     const sql = 'INSERT INTO movies (movieName, release_date, genre, image) VALUES (?, ?, ?, ?)';
-    // Insert the new product into the database
-    connection.query(sql , [name, quantity, price, image], (error, results) => {
+ 
+    // Insert the new movie into the database
+    db.query(sql, [name, release_date, genre, image], (error, results) => {
         if (error) {
             // Handle any error that occurs during the database operation
             console.error("Error adding movie:", error);
-            res.status(500).send('Error adding movie');
+            req.flash('errorMessages', 'Error adding movie. Please try again.');
+            res.redirect('/addMovie'); // Redirect back to the 'addMovie' form with error message
         } else {
             // Send a success response
-            res.redirect('/web');
+            res.redirect('/inventory');
         }
     });
 });
 
 //Update by Khant Zay Nyi
-app.get('/updatemovie/:id',checkAuthenticated, checkAdmin, (req,res) => {
+app.get('/updateMovie/:id',checkAuthenticated, checkAdmin, (req,res) => {
     const movieId = req.params.id;
     const sql = 'SELECT * FROM movies WHERE movieId = ?';
 
     // Fetch data from MySQL based on the movie ID
-    connection.query(sql , [movieId], (error, results) => {
+    db.query(sql , [movieId], (error, results) => {
         if (error) throw error;
 
         // Check if any movie with the given ID was found
         if (results.length > 0) {
             // Render HTML page with the movie data
-            res.render('updatemovie', { moviet: results[0] });
+            res.render('updateMovie', { movie: results[0] });
         } else {
             // If no movie with the given ID was found, render a 404 page or handle it accordingly
             res.status(404).send('Movie not found');
@@ -286,7 +295,7 @@ app.get('/updatemovie/:id',checkAuthenticated, checkAdmin, (req,res) => {
     });
 });
 
-app.post('/updatemovie/:id', upload.single('image'), (req, res) => {
+app.post('/updateMovie/:id', upload.single('image'), (req, res) => {
     const movieId = req.params.id;
     // Extract movie data from the request body
     const { name, release_date, genre } = req.body;
@@ -297,7 +306,7 @@ app.post('/updatemovie/:id', upload.single('image'), (req, res) => {
 
     const sql = 'UPDATE movies SET movieName = ? , release_date = ?, genre = ?, image =? WHERE movieId = ?';
     // Insert the new product into the database
-    connection.query(sql, [name, release_date, genre, image, movieId], (error, results) => {
+    db.query(sql, [name, release_date, genre, image, movieId], (error, results) => {
         if (error) {
             // Handle any error that occurs during the database operation
             console.error("Error updating movie:", error);
@@ -312,10 +321,10 @@ app.post('/updatemovie/:id', upload.single('image'), (req, res) => {
 
 // darren
 // checkadmin needed to ensure only admins can delete
-app.post('/deleteProduct/:id', checkAuthenticated, checkAdmin, (req, res) => {
-    const productId = req.params.id;
+app.post('/deleteMovie/:id', checkAuthenticated, checkAdmin, (req, res) => {
+    const movieId = req.params.id;
 
-    connection.query('DELETE FROM products WHERE productId = ?', [productId], (error, results) => {
+    db.query('DELETE FROM movies WHERE movieId = ?', [movieId], (error, results) => {
         if (error) {
             console.error("Error deleting movie:", error);
             res.status(500).send('Error deleting movie');
